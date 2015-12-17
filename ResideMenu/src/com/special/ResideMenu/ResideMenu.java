@@ -381,7 +381,7 @@ public class ResideMenu extends FrameLayout {
         boolean isInDisableDirection = isInDisableDirection(direction);
 
         if (enable && isInDisableDirection) {
-            disabledSwipeDirection.remove(direction);
+            disabledSwipeDirection.remove(disabledSwipeDirection.indexOf(direction));
         } else if (!enable && !isInDisableDirection) {
             disabledSwipeDirection.add(direction);
         }
