@@ -372,8 +372,19 @@ public class ResideMenu extends FrameLayout {
         disabledSwipeDirection.add(direction);
     }
 
+    @Deprecated
     public void setSwipeDirectionDisable(int direction) {
         disabledSwipeDirection.add(direction);
+    }
+
+    public void toggleSwipeDirectionEnabled(int direction, boolean enable) {
+        boolean isInDisableDirection = isInDisableDirection(direction);
+
+        if (enable && isInDisableDirection) {
+            disabledSwipeDirection.remove(direction);
+        } else if (!enable && !isInDisableDirection) {
+            disabledSwipeDirection.add(direction);
+        }
     }
 
     private boolean isInDisableDirection(int direction) {
