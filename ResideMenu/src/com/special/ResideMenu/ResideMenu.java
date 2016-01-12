@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
@@ -135,15 +136,8 @@ public class ResideMenu extends FrameLayout {
         return scrollViewRightMenu;
     }
 
-    @Override
+/*    @Override
     protected boolean fitSystemWindows(Rect insets) {
-        // Applies the content insets to the view's padding, consuming that
-        // content (modifying the insets to be 0),
-        // and returning true. This behavior is off by default and can be
-        // enabled through setFitsSystemWindows(boolean)
-        // in api14+ devices.
-
-        // This is added to fix soft navigationBar's overlapping to content above LOLLIPOP
         int bottomPadding = viewActivity.getPaddingBottom() + insets.bottom;
         boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
         boolean hasHomeKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_HOME);
@@ -159,14 +153,73 @@ public class ResideMenu extends FrameLayout {
         return true;
     }
 
+    */
+
+    @Override
+    protected boolean fitSystemWindows(Rect insets) {
+        // Applies the content insets to the view's padding, consuming that
+        // content (modifying the insets to be 0),
+        // and returning true. This behavior is off by default and can be
+        // enabled through setFitsSystemWindows(boolean)
+        // in api14+ devices.
+
+        // This is added to fix soft navigationBar's overlapping to content above LOLLIPOP
+        int bottomPadding = viewActivity.getPaddingBottom() + insets.bottom;
+        if (hasSoftwareNavBar(getContext())) {
+            bottomPadding += getNavigationBarHeight();
+        }
+
+        this.setPadding(viewActivity.getPaddingLeft() + insets.left,
+                viewActivity.getPaddingTop() + insets.top,
+                viewActivity.getPaddingRight() + insets.right,
+                bottomPadding);
+        insets.left = insets.top = insets.right = insets.bottom = 0;
+
+        return true;
+    }
+
     private int getNavigationBarHeight() {
-        Resources resources = getResources();
+        Resources resources = getContext().getResources();
         int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         if (resourceId > 0) {
             return resources.getDimensionPixelSize(resourceId);
         }
         return 0;
+
     }
+
+    private static boolean mHasSoftwareNavBar;
+    private static boolean mCached = false;
+
+    public static boolean hasSoftwareNavBar(Context ctx) {
+
+        if (!mCached) {
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                mHasSoftwareNavBar = false;
+                mCached = true;
+                return false;
+            }
+            Display d = ((WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+            DisplayMetrics realDisplayMetrics = new DisplayMetrics();
+            d.getRealMetrics(realDisplayMetrics);
+
+            int realHeight = realDisplayMetrics.heightPixels;
+            int realWidth = realDisplayMetrics.widthPixels;
+
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            d.getMetrics(displayMetrics);
+
+            int displayHeight = displayMetrics.heightPixels;
+            int displayWidth = displayMetrics.widthPixels;
+
+            mHasSoftwareNavBar = (realWidth > displayWidth) || (realHeight > displayHeight);
+            mCached = true;
+        }
+
+        return mHasSoftwareNavBar;
+    }
+
 
     /**
      * Set up the activity;
